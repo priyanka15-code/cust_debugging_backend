@@ -22,7 +22,7 @@ const io = socketIo(server, {
 });
 
 app.use(cors({
-  origin: ['*'],
+  ORIGIN: ['*'],
   methods: ['GET', 'POST', 'DELETE', 'PUT'],
   AllowedOrigin: ['*'],
  /*  origin: process.env.ORIGIN,
