@@ -14,15 +14,16 @@ const app = express();
 const PORT = process.env.PORT ;
 const server = http.createServer(app);
 // Initialize socket.io with CORS support
-const io = socketIo(server, {
+/* const io = socketIo(server, {
   cors: {
     origin: "http://localhost:4200",
     methods: ["GET", "POST"],
   },
-});
+}); */
 
 app.use(cors({
-  origin: process.env.ORIGIN
+  origin: process.env.ORIGIN,
+  credentials: true
 }));
 // Middleware
 app.use(bodyParser.json());
