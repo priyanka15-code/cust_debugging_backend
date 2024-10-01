@@ -17,15 +17,18 @@ const JWT_SECRET = process.env.JWT_SECRET;
 const ENCRYPTION_KEY_BUFFER = Buffer.from(ENCRYPTION_KEY, 'hex');
 const IV_BUFFER = Buffer.from(IV, 'hex');
 
+
 // GET all users
 router.get('/', async (req, res) => {
   try {
-    const users = await User.find();
-    res.json(users);
+    const customers = await User.find({ sAccess: "Customer" });
+    res.json(customers);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
+
+
 
 // POST create a new user
 router.post('/', async (req, res) => {
