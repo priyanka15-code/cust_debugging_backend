@@ -2,6 +2,7 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const User = require('../models/user.model');
 require('dotenv').config();
+const { promisify } = require('util');
 
 const JWT_SECRET = process.env.JWT_SECRET;
 const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY; 
@@ -18,14 +19,26 @@ if (!ENCRYPTION_KEY || !IV) {
 const ENCRYPTION_KEY_BUFFER = Buffer.from(ENCRYPTION_KEY, 'hex');
 const IV_BUFFER = Buffer.from(IV, 'hex');
 
-function decrypt(data) {
+
+const decryptAsync = promisify((data, callback) => {
+  try {
+    const decipher = crypto.createDecipheriv('aes-256-cbc', ENCRYPTION_KEY_BUFFER, IV_BUFFER);
+    let decrypted = decipher.update(data, 'hex', 'utf8');
+    decrypted += decipher.final('utf8');
+    callback(null, decrypted);
+  } catch (error) {
+    callback(error);
+  }
+});
+
+/* function decrypt(data) {
   const algorithm = 'aes-256-cbc';
   const decipher = crypto.createDecipheriv(algorithm, ENCRYPTION_KEY_BUFFER, IV_BUFFER);
   let decrypted = decipher.update(data, 'hex', 'utf8');
   decrypted += decipher.final('utf8');
   return decrypted;
 }
-
+ */
 const verifyToken = async (req, res, next) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
@@ -40,7 +53,26 @@ const verifyToken = async (req, res, next) => {
     }
 
     try {
-      // Decrypt the decoded values
+            // Decrypt asynchronously
+            const [decryptedName, decryptedEmail, decryptedAccess, decryptedDevId] = await Promise.all([
+              decryptAsync(decoded.sName),
+              decryptAsync(decoded.sEmail),
+              decryptAsync(decoded.sAccess),
+              decryptAsync(decoded.developerId)
+            ]);
+      
+            // Assign decrypted values back to the decoded token
+            decoded.sName = decryptedName;
+            decoded.sEmail = decryptedEmail;
+            decoded.sAccess = decryptedAccess;
+            decoded.developerId = decryptedDevId;
+      
+            req.user = await User.findOne({ _id: decoded.userId }).exec();
+            if (!req.user) {
+              return res.status(403).json({ message: 'User not authenticated' });
+            }
+      
+      /* // Decrypt the decoded values
       if (decoded.sName) {
         decoded.sName = decrypt(decoded.sName);
       }
@@ -65,7 +97,7 @@ const verifyToken = async (req, res, next) => {
         if (!req.devId) {
           return res.status(403).json({ message: 'Developer not authenticated' });
         }
-      }
+      } */
 
       next();
     } catch (error) {
