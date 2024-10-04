@@ -28,6 +28,10 @@ const userSchema = new mongoose.Schema({
   pin:{
     type: String,
     default:null
+  },
+  isLog: {
+    type: Boolean,
+    default: false 
   }
 
 });

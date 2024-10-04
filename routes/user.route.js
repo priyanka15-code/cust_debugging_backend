@@ -138,37 +138,6 @@ function decrypt(data) {
   return decrypted;
 }
 
-// POST login
-router.post('/login', async (req, res) => {
-  const { sEmail, sPassword } = req.body;
-
-  try {
-    const user = await User.findOne({ sEmail });
-    if (!user) {
-      return res.status(401).json({ message: 'Invalid credentials' });
-    }
-    const isMatch = await bcrypt.compare(sPassword, user.sPassword);
-    if (!isMatch) {
-      return res.status(401).json({ message: 'Invalid credentials' });
-    }
-    const token = generateToken(user);
-
-    return res.status(200).json({ 
-      message: 'Login successful',
-      token,
-      user: {
-        developerId: user.developerId,
-        sName: user.sName,
-        sEmail: user.sEmail,
-        sAccess: user.sAccess
-      }
-    });
-  } catch (error) {
-    console.error('Error logging in:', error);
-    return res.status(500).json({ message: 'Internal server error' });
-  }
-});
-
 
 // Admin API to login as a customer by their email
 router.post('/admin-login-as-customer', verifyToken, async (req, res) => {
@@ -196,11 +165,68 @@ router.post('/admin-login-as-customer', verifyToken, async (req, res) => {
         sName: customer.sName,
         sEmail: customer.sEmail,
         sAccess: customer.sAccess,
+        isLog: customer.isLog
       }
     });
   } catch (error) {
     console.error('Error logging in as customer:', error);
     return res.status(500).json({ message: 'Internal server error.' });
+  }
+});
+
+
+
+// POST login
+router.post('/login', async (req, res) => {
+  const { sEmail, sPassword } = req.body;
+
+  try {
+    const user = await User.findOne({ sEmail });
+    if (!user) {
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+    const isMatch = await bcrypt.compare(sPassword, user.sPassword);
+    if (!isMatch) {
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+    const token = generateToken(user);
+
+    return res.status(200).json({ 
+      message: 'Login successful',
+      token,
+      user: {
+        developerId: user.developerId,
+        sName: user.sName,
+        sEmail: user.sEmail,
+        sAccess: user.sAccess,
+        isLog:user.isLog
+      }
+    });
+  } catch (error) {
+    console.error('Error logging in:', error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+
+
+// Update user status (isLog)
+router.put('/update-status', verifyToken, async (req, res) => {
+  const { sEmail, isActive } = req.body;
+
+  try {
+    const user = await User.findOne({ sEmail },{ isActive }, { new: true });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    user.isLog = isActive;
+    await user.save();
+
+    return res.status(200).json({ message: 'User status updated successfully' });
+  } catch (error) {
+    console.error('Error updating user status:', error);
+    return res.status(500).json({ message: 'Internal server error' });
   }
 });
 

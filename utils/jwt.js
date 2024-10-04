@@ -16,10 +16,11 @@ const IV_BUFFER = Buffer.from(IV, 'hex');
 const generateToken = (user) => {
   const payload = {
     userId: user._id,
-    sName: encrypt(user.sName || ''),
-    sEmail: encrypt(user.sEmail || ''),
-    sAccess: encrypt(user.sAccess || ''),
-    developerId: encrypt(user.developerId || '')
+    sName: encrypt(typeof user.sName === 'string' ? user.sName : ''),
+    sEmail: encrypt(typeof user.sEmail === 'string' ? user.sEmail : ''),
+    sAccess: encrypt(typeof user.sAccess === 'string' ? user.sAccess : ''),
+    developerId: encrypt(typeof user.developerId === 'string' ? user.developerId : ''),
+    isLog: typeof user.isLog === 'boolean' ? user.isLog.toString() : ''
   };
 
   const options = {
