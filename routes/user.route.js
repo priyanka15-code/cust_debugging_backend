@@ -122,7 +122,7 @@ router.post('/dev-Login', async (req, res) => {
         developerId: user.developerId,
         sName: user.sName,
         sAccess: user.sAccess,
-        isLog: customer.isLog
+        isLog: user.isLog
 
       }
     });
