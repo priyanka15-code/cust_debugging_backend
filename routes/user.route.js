@@ -121,7 +121,9 @@ router.post('/dev-Login', async (req, res) => {
       user: {
         developerId: user.developerId,
         sName: user.sName,
-        sAccess: user.sAccess
+        sAccess: user.sAccess,
+        isLog: customer.isLog
+
       }
     });
   } catch (error) {
