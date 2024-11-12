@@ -83,4 +83,31 @@ router.post('/', async (req, res) => {
     }
 });
 
+// GET products by search text
+router.get('/search', async (req, res) => {
+    const searchText = req.query.text;
+    const customerId = req.user ? req.user._id : null; 
+
+    if (!searchText && !customerId) {
+        return res.status(400).json({ message: 'Search text or customer ID is required' });
+    }
+    try {
+        let query = {};
+        if (searchText) {
+            query = { $text: { $search: searchText } };
+        }
+        if (customerId) {
+            query.customerId = customerId;
+        }
+        const products = await Product.find(query).sort({ score: { $meta: 'textScore' } });
+        res.json(products);
+    } catch (err) {
+        console.error('Error searching products:', err);
+        res.status(500).json({ message: 'Error while searching products' });
+    }
+});
+
+
+
+
 module.exports = router;

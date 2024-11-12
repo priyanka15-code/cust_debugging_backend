@@ -21,7 +21,8 @@ const IV_BUFFER = Buffer.from(IV, 'hex');
 // GET all users
 router.get('/', async (req, res) => {
   try {
-    const customers = await User.find({ sAccess: "Customer" });
+    const customers = await User.find();
+    console.log("customer " , customers)
     res.json(customers);
   } catch (err) {
     res.status(500).json({ message: err.message });
